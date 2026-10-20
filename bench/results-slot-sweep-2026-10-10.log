@@ -1,0 +1,46 @@
+=== A : -np 1 -c 65536
+load=4.465673948s
+20488 MiB
+RAM used(G)=3 avail=122
+PP x1: 1407 tok/s agrégé (8288 tokens)
+PP x2: 1296 tok/s agrégé (16576 tokens)
+TG x1: 39.3 tok/s agrégé | par flux 41.2-41.2 tok/s
+VRAM pic=20502 MiB
+=== B : -np 2 -c 131072 -ctk q8_0 -ctv q8_0
+load=4.395210823s
+21364 MiB
+RAM used(G)=3 avail=121
+PP x1: 1397 tok/s agrégé (8288 tokens)
+PP x2: 1367 tok/s agrégé (16576 tokens)
+TG x1: 39.3 tok/s agrégé | par flux 40.8-40.8 tok/s
+TG x2: 69.7 tok/s agrégé | par flux 35.8-35.8 tok/s
+VRAM pic=21378 MiB
+=== C : -np 4 -c 131072 -ctk q8_0 -ctv q8_0
+load=4.344096992s
+21632 MiB
+RAM used(G)=3 avail=122
+PP x1: 1384 tok/s agrégé (8288 tokens)
+PP x2: 1392 tok/s agrégé (16576 tokens)
+TG x1: 38.2 tok/s agrégé | par flux 40.6-40.6 tok/s
+TG x2: 69.5 tok/s agrégé | par flux 35.7-35.7 tok/s
+TG x4: 96.6 tok/s agrégé | par flux 25.0-25.0 tok/s
+VRAM pic=21648 MiB
+=== D : -np 4 -kvu -c 131072 -ctk q8_0 -ctv q8_0
+load=4.376273155s
+21728 MiB
+RAM used(G)=3 avail=122
+PP x1: 1368 tok/s agrégé (8288 tokens)
+PP x2: 1279 tok/s agrégé (16576 tokens)
+TG x1: 38.0 tok/s agrégé | par flux 40.6-40.6 tok/s
+TG x2: 69.3 tok/s agrégé | par flux 35.5-35.5 tok/s
+TG x4: 93.2 tok/s agrégé | par flux 24.3-24.3 tok/s
+VRAM pic=21744 MiB
+=== E : -np 2 -c 131072 -ctk q8_0 -ctv q8_0 -b 2048 -ub 2048
+load=4.378620604s
+21856 MiB
+RAM used(G)=3 avail=121
+PP x1: 1430 tok/s agrégé (8288 tokens)
+PP x2: 1397 tok/s agrégé (16576 tokens)
+TG x1: 39.0 tok/s agrégé | par flux 40.5-40.5 tok/s
+TG x2: 69.2 tok/s agrégé | par flux 35.5-35.5 tok/s
+VRAM pic=21898 MiB

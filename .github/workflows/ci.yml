@@ -1,0 +1,32 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: false
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run pytest -q
+      - name: Shell scripts
+        run: shellcheck -S warning bench/*.sh
+      - name: Caddyfile
+        env:
+          CADDY_IMAGE: caddy:2.11.2@sha256:25cdc846626b62d05f6b633b9b40c2c9f6ef89b515dc76133cefd920f7dbe562
+        run: |
+          hash=$(docker run --rm "$CADDY_IMAGE" caddy hash-password -p ci-only-dummy)
+          docker run --rm -e ADMIN_PASSWORD_HASH="$hash" -v "$PWD/deploy/caddy:/etc/caddy:ro" "$CADDY_IMAGE" \
+            caddy validate --adapter caddyfile --config /etc/caddy/Caddyfile

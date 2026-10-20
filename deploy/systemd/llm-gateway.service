@@ -1,0 +1,23 @@
+[Unit]
+Description=LLM access gateway (per-user keys, one-time links, Caddy forward_auth)
+After=network.target
+
+[Service]
+User=llmgw
+Group=llmgw
+Environment=GW_PUBLIC_URL=https://llm.example.com GW_PORT=8090
+ExecStart=/usr/bin/python3 -I /opt/llm/gateway/app.py
+Restart=on-failure
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/llm/gateway/data
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_UNIX
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

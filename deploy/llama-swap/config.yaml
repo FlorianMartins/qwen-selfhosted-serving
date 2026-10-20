@@ -1,0 +1,46 @@
+# llama-swap — one model loaded at a time, listens on 127.0.0.1:8080 (-listen flag of the systemd unit).
+# Production configuration of the box described in the README (RTX 3090 24 GB, Ryzen 7 3700X, 128 GB DDR4).
+healthCheckTimeout: 600
+logLevel: info
+# llama-swap AND llama-server logs go to journald (otherwise only a ~40 min in-memory buffer)
+logToStdout: both
+startPort: 10001
+sendLoadingState: false
+
+# Internal API key, defined in /etc/llama-swap/llama-swap.env (EnvironmentFile of the unit).
+# Never given to users: the reverse proxy injects it after the gateway has checked the user's own key.
+apiKeys:
+  - "${env.LLAMA_SWAP_KEY_1}"
+
+macros:
+  server: >-
+    /opt/llm/llama.cpp/build/bin/llama-server --host 127.0.0.1 --port ${PORT}
+    --alias ${MODEL_ID} --jinja -fa on --fit off --metrics
+  # official Qwen3.8 thinking-mode sampling (presence 0.0: higher values cause language mixing)
+  sampling: "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --presence-penalty 0.0"
+
+models:
+  "qwen-27b":
+    name: "Qwen3.8-27B UD-Q4_K_XL"
+    cmd: |
+      ${server}
+      -m /opt/llm/models/qwen3.8-27b/Qwen3.8-27B-UD-Q4_K_XL.gguf
+      # everything in VRAM; 2 dedicated slots of 69632 tokens, KV cache q8_0 (see docs/decisions.md)
+      # no -kvu: when a shared pool overflows, llama.cpp fails EVERY in-flight request
+      # a conversation waiting for its slot is parked in RAM (-cram, MiB) and restored in seconds
+      -ngl 99 -np 2 -c 139264 -ctk q8_0 -ctv q8_0 -cram 49152
+      --mmproj /opt/llm/models/qwen3.8-27b/mmproj-F16.gguf --no-mmproj-offload
+      # MTP: the model's own built-in draft head — speculative, verified by the model, lossless
+      --spec-type draft-mtp --spec-draft-n-max 3 -ctkd q4_0 -ctvd q4_0
+      ${sampling}
+
+  "qwen-flash":
+    name: "Qwen3.8-Flash-Next UD-Q4_K_XL"
+    cmd: |
+      ${server}
+      -m /opt/llm/models/qwen3.8-flash-next/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf
+      # MoE: experts of the first 40 layers (of 48) in system RAM, ~21.4 GB VRAM while generating
+      -ngl 99 --n-cpu-moe 40 -t 8 -np 1 -c 65536
+      ${sampling}
+      --chat-template-kwargs '{"reasoning_effort":"medium"}'
+    ttl: 1800

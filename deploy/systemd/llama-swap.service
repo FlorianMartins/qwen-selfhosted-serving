@@ -1,0 +1,24 @@
+[Unit]
+Description=llama-swap (OpenAI proxy -> llama-server, Qwen3.8)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=llm
+Group=llm
+WorkingDirectory=/opt/llm
+EnvironmentFile=/etc/llama-swap/llama-swap.env
+ExecStart=/opt/llm/llama-swap/llama-swap -config /opt/llm/llama-swap/config.yaml -listen 127.0.0.1:8080
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=30
+LimitMEMLOCK=infinity
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,55 @@
+{
+	email admin@example.com
+}
+
+llm.example.com {
+	# OpenAI-compatible API: the user's key is checked by the gateway, then the internal key is injected towards llama-swap
+	@api path /v1/*
+	handle @api {
+		forward_auth 127.0.0.1:8090 {
+			uri /auth
+		}
+		request_body {
+			max_size 50MB
+		}
+		reverse_proxy 127.0.0.1:8080 {
+			header_up Authorization "Bearer {env.LLAMA_SWAP_INTERNAL_KEY}"
+			header_up -X-Api-Key
+			# streaming (SSE): flush every chunk, never time out a long generation
+			flush_interval -1
+			transport http {
+				read_timeout 0
+				response_header_timeout 15m
+			}
+		}
+	}
+
+	# one-time credential links (public, single-use token)
+	handle /claim/* {
+		reverse_proxy 127.0.0.1:8090
+	}
+
+	# admin panel — hash from `caddy hash-password`, set in caddy.env
+	handle /admin* {
+		basic_auth {
+			admin {$ADMIN_PASSWORD_HASH}
+		}
+		reverse_proxy 127.0.0.1:8090
+	}
+
+	handle {
+		respond "Not found" 404
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		-Server
+	}
+	log {
+		output file /var/log/caddy/llm.example.com.log {
+			roll_size 50MiB
+			roll_keep 5
+		}
+	}
+}

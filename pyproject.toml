@@ -1,0 +1,23 @@
+[project]
+name = "qwen-selfhosted-serving"
+version = "1.0.0"
+description = "Production serving of Qwen3.8 on a single RTX 3090: configuration, gateway, benchmarks and the measurements behind every decision"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest==8.4.2", "ruff==0.14.0"]
+
+[tool.ruff]
+line-length = 240
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "S"]
+# compact one-file style of the gateway and bench scripts (deployed as is, stdlib only); S101: asserts in tests
+ignore = ["E401", "E501", "E701", "E702", "E731", "S101", "S603", "S607", "S310", "S110", "S608", "S104"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

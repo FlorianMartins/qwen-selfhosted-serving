@@ -8,7 +8,7 @@ requires-python = ">=3.11"
 dependencies = []
 
 [dependency-groups]
-dev = ["pytest==8.4.2", "ruff==0.14.0"]
+dev = ["pytest==8.4.2", "ruff==0.17.0"]
 
 [tool.ruff]
 line-length = 240
